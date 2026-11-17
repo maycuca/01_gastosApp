@@ -1,0 +1,30 @@
+# Datos locales: SQLite (gastos.db), jwt-secret y backups/
+data/
+
+# Java / Spring Boot
+gastosAppBackend/target/
+gastosAppBackend/.mvn/wrapper/maven-wrapper.jar
+*.class
+*.jar
+*.war
+
+# Node / React / Vite
+gastosAppFronend/node_modules/
+gastosAppFronend/dist/
+gastosAppFronend/.env
+gastosAppFronend/.env.local
+
+# IDEs y Sistema Operativo
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+
+# Claude Code: configuración personal
+.claude/settings.local.json
+
+# Pruebas y logs
+gastosAppFronend/.vitest/
+gastosAppFronend/coverage/
+*.log

@@ -1,0 +1,1139 @@
+/* Visual system: a household account book. Pale ledger paper, ballpoint-blue ink,
+   red ink only for "números rojos" (over the limit) and destructive actions,
+   highlighter yellow to mark where you are. */
+:root {
+  --paper: #eef3eb;
+  --sheet: #fafcf7;
+  --rule: #c9d8c4;
+  --rule-strong: #9fb79b;
+  --ink: #1b2440;
+  --ink-soft: #566074;
+  --pen: #2340b0;
+  --pen-deep: #1a2f86;
+  --red: #c4201c;
+  --red-deep: #9c1814;
+  --red-wash: #fbe8e5;
+  --margin-line: #dc8d86;
+  --marker: #ffe14a;
+  --green-wash: #e3f2e6;
+  --green-line: #86c29b;
+  --radius: 3px;
+  font-family: 'Archivo Variable', 'Archivo', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  /* Archivo's x-height ratio: while it loads, the fallback font is scaled to the same visual size. */
+  font-size-adjust: 0.526;
+  /* No root font-size: the user's browser text size setting applies. */
+  line-height: 1.5;
+  /* Native controls (date picker, select, color input) take the app's ink. */
+  accent-color: var(--pen);
+  color-scheme: light;
+  color: var(--ink);
+  background: var(--paper);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+::selection {
+  background: var(--marker);
+  color: var(--ink);
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+h1,
+h2,
+p,
+ul,
+dl,
+dd {
+  margin: 0;
+}
+
+h1 {
+  font-size: 2.4rem;
+  font-weight: 800;
+  font-stretch: 70%;
+  line-height: 1.05;
+}
+
+h2 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  font-stretch: 80%;
+}
+
+ul {
+  padding: 0;
+  list-style: none;
+}
+
+a {
+  color: var(--pen);
+  text-underline-offset: 3px;
+}
+
+code {
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.muted {
+  color: var(--ink-soft);
+}
+
+.text-danger {
+  color: var(--red);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ---------- Shell: a left rail separated by the ledger's double margin line ---------- */
+
+.app-shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 13.5rem minmax(0, 1fr);
+}
+
+.app-rail {
+  position: sticky;
+  top: 0;
+  align-self: start;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+  padding: 2rem 1.25rem 1.5rem 1.5rem;
+}
+
+.brand {
+  font-size: 1.7rem;
+  font-weight: 800;
+  font-stretch: 66%;
+  line-height: 1;
+}
+
+.app-nav {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.3rem;
+}
+
+.nav-link {
+  padding: 0.1rem 0.3rem;
+  color: var(--ink);
+  font-size: 1.05rem;
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.nav-link:hover {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
+
+/* Highlighter stroke: marks the current place in the nav and in the period tabs. */
+.nav-link-active,
+.tab-active {
+  font-weight: 700;
+  background: linear-gradient(transparent 30%, var(--marker) 30%, var(--marker) 92%, transparent 92%);
+}
+
+.app-user {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+}
+
+.app-username {
+  padding-left: 0.3rem;
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+}
+
+/* The user name is the link to the account page; once active it reads in ink like the menu. */
+.app-username.nav-link-active {
+  color: var(--ink);
+}
+
+.app-user .btn-ghost {
+  padding-left: 0.3rem;
+}
+
+/* The margin line lives on the content column so it runs the full height of the page. */
+.app-main {
+  min-width: 0;
+  padding: 2.25rem clamp(1rem, 4vw, 3rem) 4rem;
+  border-left: 4px double var(--margin-line);
+}
+
+.app-main > * {
+  max-width: 56rem;
+}
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.page-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.period-range {
+  margin-top: 0.3rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.page-center {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.card {
+  background: var(--sheet);
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+}
+
+.card > h2 {
+  margin-bottom: 0.75rem;
+}
+
+.account-card {
+  max-width: 28rem;
+}
+
+.card-label {
+  color: var(--ink-soft);
+  font-size: 0.875rem;
+}
+
+.is-refreshing {
+  opacity: 0.6;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 24rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  padding: 2rem 1.75rem;
+  border: 1.5px solid var(--ink);
+}
+
+.auth-card h1 {
+  font-size: 3rem;
+  font-stretch: 64%;
+}
+
+.auth-switch {
+  font-size: 0.95rem;
+}
+
+/* ---------- Buttons ---------- */
+
+.btn {
+  font: inherit;
+  font-weight: 600;
+  padding: 0.5rem 0.95rem;
+  border: 1.5px solid var(--ink);
+  border-radius: var(--radius);
+  background: var(--sheet);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.btn:hover:not(:disabled) {
+  background: var(--paper);
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--pen);
+  border-color: var(--pen);
+  color: #fff;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--pen-deep);
+  border-color: var(--pen-deep);
+}
+
+.btn-danger {
+  background: var(--red);
+  border-color: var(--red);
+  color: #fff;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: var(--red-deep);
+  border-color: var(--red-deep);
+}
+
+.btn-danger-outline {
+  color: var(--red);
+  border-color: var(--red);
+}
+
+.btn-danger-outline:hover:not(:disabled) {
+  background: var(--red-wash);
+}
+
+.btn-ghost {
+  border-color: transparent;
+  background: transparent;
+  font-weight: 500;
+}
+
+.btn-ghost:hover:not(:disabled) {
+  background: transparent;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.btn-small {
+  padding: 0.25rem 0.65rem;
+  font-size: 0.875rem;
+}
+
+.btn-icon {
+  padding: 0.1rem 0.5rem;
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.btn-block {
+  width: 100%;
+}
+
+/* ---------- Forms ---------- */
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.field > label,
+.limit-form > label {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+input[type='text'],
+input[type='password'],
+input[type='search'],
+input[type='date'],
+select {
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  width: 100%;
+  padding: 0.5rem 0.65rem;
+  border: 1.5px solid var(--rule-strong);
+  border-radius: var(--radius);
+  background: #fff;
+  color: var(--ink);
+}
+
+input::placeholder {
+  color: var(--ink-soft);
+  opacity: 0.7;
+}
+
+input[readonly] {
+  background: var(--paper);
+  color: var(--ink-soft);
+}
+
+input:focus-visible,
+select:focus-visible,
+button:focus-visible,
+a:focus-visible,
+[tabindex='-1']:focus-visible {
+  outline: 2px solid var(--pen);
+  outline-offset: 2px;
+}
+
+input:focus-visible,
+select:focus-visible {
+  border-color: var(--pen);
+}
+
+.field-invalid input,
+.field-invalid select,
+input[aria-invalid='true'] {
+  border-color: var(--red);
+}
+
+.field-error {
+  color: var(--red);
+  font-size: 0.875rem;
+}
+
+.field-hint {
+  color: var(--ink-soft);
+  font-size: 0.825rem;
+}
+
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding-top: 0.25rem;
+}
+
+.color-picker {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.color-picker input[type='color'] {
+  width: 3rem;
+  height: 2.4rem;
+  padding: 0;
+  border: 1.5px solid var(--rule-strong);
+  border-radius: var(--radius);
+  background: #fff;
+}
+
+.filters {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.filters-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 0.75rem;
+}
+
+/* ---------- Tags ---------- */
+
+.tag-input {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.tag-input-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0 0.45rem;
+  border: 1px solid var(--rule-strong);
+  border-radius: 2px;
+  background: var(--paper);
+  font-size: 0.825rem;
+}
+
+.tag-remove {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0 0.1rem;
+  color: var(--ink-soft);
+}
+
+/* ---------- Alerts and states ---------- */
+
+.alert {
+  padding: 0.7rem 0.9rem;
+  border-left: 4px solid var(--rule-strong);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  background: var(--sheet);
+}
+
+.alert-error,
+.alert-danger {
+  background: var(--red-wash);
+  border-left-color: var(--red);
+  color: var(--red-deep);
+}
+
+.alert-warning {
+  background: #fff7cf;
+  border-left-color: #d9b400;
+}
+
+.alert-success {
+  background: var(--green-wash);
+  border-left-color: var(--green-line);
+}
+
+.alert-dismissible {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.alert-list {
+  margin-top: 0.3rem;
+  padding-left: 1.1rem;
+  list-style: disc;
+}
+
+.status {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 1.5rem 0;
+  color: var(--ink-soft);
+}
+
+.status-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  font-stretch: 85%;
+  color: var(--ink);
+}
+
+.status-error .status-title {
+  color: var(--red);
+}
+
+.spinner {
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 3px solid var(--rule);
+  border-top-color: var(--pen);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.badge {
+  display: inline-block;
+  margin-left: 0.5rem;
+  padding: 0.05rem 0.45rem;
+  border-radius: 2px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  font-stretch: 100%;
+  vertical-align: middle;
+}
+
+.badge-danger {
+  background: var(--red);
+  color: #fff;
+}
+
+/* ---------- Modal ---------- */
+
+/* Native <dialog> opened with showModal(). */
+.modal {
+  width: min(30rem, calc(100% - 2rem));
+  max-height: calc(100dvh - 2rem);
+  margin: 6vh auto auto;
+  padding: 0;
+  overflow-y: auto;
+  color: var(--ink);
+  background: var(--sheet);
+  border: 1.5px solid var(--ink);
+  border-radius: 4px;
+  box-shadow: 0 18px 50px rgb(27 36 64 / 30%);
+  /* Keeps scroll gestures inside the dialog from moving the page behind it. */
+  overscroll-behavior: contain;
+}
+
+.modal[open] {
+  animation: modal-in 180ms ease-out;
+}
+
+/* ::backdrop only honors overscroll-behavior once it is a scroll container. */
+.modal::backdrop {
+  background: rgb(27 36 64 / 45%);
+  overflow: hidden;
+  overscroll-behavior: contain;
+}
+
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.8rem 1.25rem;
+  border-bottom: 3px double var(--margin-line);
+}
+
+.modal-header h2 {
+  font-size: 1.4rem;
+  font-weight: 800;
+  font-stretch: 72%;
+}
+
+.modal-body {
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.confirm-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+/* ---------- Tables and lists: ruled like ledger lines ---------- */
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  padding: 0.6rem 0.5rem;
+  text-align: left;
+  border-bottom: 1px solid var(--rule);
+  vertical-align: middle;
+}
+
+.table th {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  border-bottom: 1.5px solid var(--ink);
+}
+
+.numeric {
+  text-align: right !important;
+}
+
+.amount {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  justify-content: flex-end;
+}
+
+td.row-actions {
+  display: table-cell;
+  text-align: right;
+  white-space: nowrap;
+}
+
+td.row-actions .btn + .btn {
+  margin-left: 0.4rem;
+}
+
+.category-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.category-name {
+  font-weight: 600;
+}
+
+.color-dot {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 2px;
+  flex: none;
+}
+
+.color-swatch {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 2px;
+  border: 1px solid var(--ink);
+  flex: none;
+}
+
+.list {
+  padding: 0;
+}
+
+.list-row,
+.limit-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.8rem 1.25rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+.list > li:last-child {
+  border-bottom: 0;
+}
+
+.pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding-top: 0.75rem;
+}
+
+.pagination-info {
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Limits ---------- */
+
+.limit-row-exceeded {
+  background: var(--red-wash);
+}
+
+.limit-row-main {
+  flex: 1 1 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.limit-period {
+  font-size: 1.15rem;
+}
+
+.limit-figures {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.limit-figures dt {
+  font-size: 0.825rem;
+  color: var(--ink-soft);
+}
+
+.limit-figures dd {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.limit-form {
+  flex: 1 1 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.limit-form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.limit-form-row input {
+  flex: 1 1 110px;
+  width: auto;
+}
+
+/* ---------- Dashboard ---------- */
+
+.tabs {
+  display: flex;
+  gap: 0.9rem;
+  overflow-x: auto;
+  padding: 0.2rem 0 0.6rem;
+  border-bottom: 1.5px solid var(--ink);
+}
+
+.tab {
+  font: inherit;
+  font-size: 1.05rem;
+  padding: 0.05rem 0.3rem;
+  border: 0;
+  background-color: transparent;
+  color: var(--ink-soft);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.tab:hover {
+  color: var(--ink);
+}
+
+.tab-active {
+  color: var(--ink);
+}
+
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.total-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+/* The one loud element of the app: the period's total, written large. */
+.total-amount {
+  font-size: clamp(3.4rem, 13vw, 7.5rem);
+  font-weight: 800;
+  font-stretch: 64%;
+  font-variant-numeric: tabular-nums;
+  line-height: 0.92;
+  letter-spacing: -0.01em;
+}
+
+.change {
+  font-weight: 600;
+}
+
+/* Spending measured against the limit. The scale always fits both figures:
+   blue up to the limit mark, red for whatever goes past it. */
+.ruler {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  max-width: 46rem;
+  margin-top: 0.9rem;
+}
+
+.ruler-track {
+  position: relative;
+  height: 1.6rem;
+  border: 1.5px solid var(--ink);
+  border-radius: 2px;
+  background-color: var(--sheet);
+  /* One tick per tenth of the limit. */
+  background-image: linear-gradient(to right, var(--rule-strong) 1px, transparent 1px);
+  background-size: calc(var(--limit-pos) / 10) 45%;
+  background-repeat: repeat-x;
+  background-position: left bottom;
+}
+
+.ruler-fill,
+.ruler-over {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  transform-origin: left center;
+  animation: ruler-grow 700ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.ruler-fill {
+  left: 0;
+  width: var(--fill);
+  background: var(--pen);
+}
+
+.ruler-over {
+  left: var(--limit-pos);
+  width: var(--over);
+  /* Stays visible when the limit is exceeded by very little. */
+  min-width: 6px;
+  background-color: var(--red);
+  background-image: repeating-linear-gradient(135deg, transparent 0 5px, rgb(255 255 255 / 30%) 5px 7px);
+  animation-delay: 450ms;
+  animation-duration: 450ms;
+}
+
+@keyframes ruler-grow {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+.ruler-mark {
+  position: absolute;
+  top: -0.4rem;
+  bottom: -0.4rem;
+  left: var(--limit-pos);
+  border-left: 2.5px solid var(--ink);
+}
+
+.ruler-scale {
+  position: relative;
+  height: 1.3rem;
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.ruler-limit {
+  position: absolute;
+  left: var(--limit-pos);
+  transform: translateX(-100%);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.ruler-limit-start {
+  transform: none;
+  padding-left: 0.4rem;
+}
+
+.dashboard-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: 2.5rem;
+  align-items: start;
+}
+
+.dashboard-columns-single {
+  grid-template-columns: minmax(0, 34rem);
+}
+
+.panel > h2 {
+  padding-bottom: 0.4rem;
+  margin-bottom: 0.9rem;
+  border-bottom: 1.5px solid var(--ink);
+}
+
+.category-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.category-strip {
+  display: flex;
+  gap: 2px;
+  height: 1rem;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.category-strip > span {
+  min-width: 3px;
+}
+
+.chart-box {
+  width: 100%;
+  height: 240px;
+  min-width: 0;
+}
+
+.chart-box-wide {
+  height: 260px;
+}
+
+.legend {
+  display: flex;
+  flex-direction: column;
+}
+
+.legend-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.legend-row:last-child {
+  border-bottom: 0;
+}
+
+.legend-values {
+  display: flex;
+  gap: 0.75rem;
+  white-space: nowrap;
+}
+
+.legend-values .muted {
+  min-width: 3.6rem;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation-duration: 3s;
+  }
+
+  .ruler-fill,
+  .ruler-over,
+  .modal[open] {
+    animation: none;
+  }
+}
+
+/* ---------- Narrow screens ---------- */
+
+/* Breakpoints in em, so they also respond to a larger text size. */
+@media (max-width: 56.25em) {
+  .dashboard-columns {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.75rem;
+  }
+}
+
+@media (max-width: 51.25em) {
+  .app-shell {
+    display: block;
+  }
+
+  .app-rail {
+    position: static;
+    height: auto;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1rem;
+    padding: 0.75rem 1rem;
+    border-bottom: 4px double var(--margin-line);
+  }
+
+  .app-nav {
+    order: 3;
+    flex-basis: 100%;
+    flex-direction: row;
+    gap: 0.9rem;
+    overflow-x: auto;
+  }
+
+  .app-user {
+    margin-top: 0;
+    margin-left: auto;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .app-main {
+    padding-top: 1.5rem;
+    border-left: 0;
+  }
+}
+
+@media (max-width: 40em) {
+  h1 {
+    font-size: 2rem;
+  }
+
+  /* Each table row becomes a stacked block with its column name as a label.
+     The header row is removed for everyone: the labels below replace it, and a
+     visually hidden one would be read twice by screen readers. */
+  .responsive-table thead {
+    display: none;
+  }
+
+  .responsive-table,
+  .responsive-table tbody,
+  .responsive-table tr,
+  .responsive-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .responsive-table tr {
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .responsive-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.2rem 0;
+    border-bottom: 0;
+    text-align: right;
+  }
+
+  .responsive-table td[data-label]::before {
+    content: attr(data-label);
+    color: var(--ink-soft);
+    font-size: 0.825rem;
+    text-align: left;
+  }
+
+  .responsive-table td.row-actions {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 0.4rem;
+  }
+
+  .form-actions .btn {
+    flex: 1 1 auto;
+  }
+}
