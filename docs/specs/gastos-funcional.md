@@ -457,4 +457,4 @@ El modo de desarrollo (Vite en el puerto 5173 con proxy a `/api`) sigue disponib
 - Sin verificar en Safari ni en Firefox, ni con teclados de composición reales.
 
 ### Publicación
-- Subir la v1.0.0 a `github.com/maycuca/gastosAppBackend` y `github.com/maycuca/gastosAppFronend` (rama `main`, etiqueta `v1.0.0`).
+- Hecho: la v1.0.0 se publicó en `github.com/maycuca/01_gastosApp` (rama `main`, etiqueta `v1.0.0`), con todo el proyecto en un solo repositorio.
